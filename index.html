@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mes Bières &amp; Vins</title>
+<meta name="description" content="Questionnaire de goûts, bibliothèque de dégustation et suggestions de bières et de vins.">
+<meta name="theme-color" content="#2a1418">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bières & Vins">
+<style>
+  :root{
+    --bg:#1b1113; --bg2:#25171a; --card:#2f1e22; --line:#4a3036;
+    --txt:#f6ece4; --muted:#c7b2a8; --wine:#a8324a; --wine2:#c9506a;
+    --beer:#e0a030; --beer2:#f2c060;
+    --n1:#c94a4a; --n2:#8a8a8a; --n3:#3fa36b; --n0:#4a83c9;
+    --r:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+  header{position:sticky;top:0;z-index:5;background:linear-gradient(180deg,#2a1418,#22141a);border-bottom:1px solid var(--line);padding:12px 16px calc(12px) 16px;display:flex;align-items:center;gap:10px}
+  header h1{font-size:1.15rem;margin:0;flex:1;letter-spacing:.2px}
+  header h1 span{color:var(--beer2)} header h1 b{color:var(--wine2)}
+  main{max-width:720px;margin:0 auto;padding:16px}
+  h2{font-size:1.25rem;margin:.2em 0 .6em}
+  h3{font-size:1.05rem;margin:1.2em 0 .5em;color:var(--beer2)}
+  p{margin:.4em 0}
+  .muted{color:var(--muted)} .small{font-size:.88rem}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin:0 0 14px}
+  button,.btn{font:inherit;color:var(--txt);background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:10px 14px;cursor:pointer;text-align:center}
+  button:active{transform:scale(.98)}
+  .btn-main{background:var(--wine);border-color:var(--wine2);font-weight:600}
+  .btn-beer{background:#7a5414;border-color:var(--beer)}
+  .btn-ghost{background:transparent}
+  .btn-danger{background:transparent;border-color:var(--n1);color:#ff9b9b}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .grow{flex:1}
+  .full{width:100%}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 12px}
+  .chip{padding:6px 12px;border-radius:999px;font-size:.92rem}
+  .chip.on{background:var(--wine);border-color:var(--wine2)}
+  input,select,textarea{font:inherit;color:var(--txt);background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:10px;width:100%}
+  textarea{min-height:80px;resize:vertical}
+  label.f{display:block;margin:10px 0 4px;font-size:.9rem;color:var(--muted)}
+  /* Navigation basse */
+  nav{position:fixed;bottom:0;left:0;right:0;z-index:6;background:#1f1316;border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom)}
+  nav button{flex:1;border:0;border-radius:0;background:transparent;padding:8px 2px 9px;font-size:.72rem;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px}
+  nav button .i{font-size:1.35rem;line-height:1}
+  nav button.on{color:var(--txt)} nav button.on .i{filter:drop-shadow(0 0 6px rgba(201,80,106,.8))}
+  /* Questionnaire */
+  .progress{height:8px;background:var(--bg2);border-radius:99px;overflow:hidden;margin:6px 0 4px}
+  .progress div{height:100%;background:linear-gradient(90deg,var(--beer),var(--wine2));transition:width .25s}
+  .qsection{font-size:.82rem;text-transform:uppercase;letter-spacing:.06em;color:var(--beer2)}
+  .qtitle{font-size:1.35rem;font-weight:700;margin:.3em 0}
+  .answers{display:grid;gap:10px;margin-top:16px}
+  .answers button{padding:14px;font-size:1.02rem;text-align:left}
+  .answers button.sel{outline:2px solid var(--beer2);background:#3a2a1a}
+  .rate4{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+  .rate4 button{padding:16px 8px;font-size:1rem;display:flex;flex-direction:column;align-items:center;gap:4px}
+  .rate4 button .e{font-size:1.7rem}
+  .rate4 button.sel{outline:2px solid var(--beer2);background:#3a2a1a}
+  .rl-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+  .rl-item:last-child{border-bottom:0}
+  .rl-item .lbl{flex:1;font-size:.95rem}
+  .rl-item button{padding:7px 0;width:42px;font-size:1.05rem}
+  .rl-item button.sel{outline:2px solid var(--beer2);background:#3a2a1a}
+  .qnav{display:flex;justify-content:space-between;gap:8px;margin-top:18px}
+  /* Fiches */
+  .ptype{font-size:.78rem;padding:2px 8px;border-radius:99px;border:1px solid var(--line);display:inline-block}
+  .ptype.biere{border-color:var(--beer);color:var(--beer2)} .ptype.ouest{border-color:#4a9ac9;color:#9fd0f0} .ptype.vin{border-color:var(--wine2);color:#f0a0b0}
+  .pname{font-size:1.3rem;font-weight:700;margin:.3em 0 .1em}
+  .tags{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+  .tag{font-size:.8rem;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:3px 8px;color:var(--muted)}
+  .note{display:inline-flex;align-items:center;gap:4px;font-size:.8rem;padding:3px 9px;border-radius:99px;font-weight:600;white-space:nowrap}
+  .note.n1{background:rgba(201,74,74,.2);color:#ff9b9b} .note.n2{background:rgba(138,138,138,.22);color:#ddd}
+  .note.n3{background:rgba(63,163,107,.22);color:#8ee0b0} .note.n0{background:rgba(74,131,201,.22);color:#a8c8ff}
+  .rate-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px}
+  .rate-btns button{padding:10px 2px;font-size:.8rem;display:flex;flex-direction:column;align-items:center;gap:2px}
+  .rate-btns button .e{font-size:1.4rem}
+  .rate-btns button.sel{outline:2px solid var(--beer2);background:#3a2a1a}
+  .list-item{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--card);margin-bottom:8px;cursor:pointer}
+  .list-item .t{flex:1;min-width:0}
+  .list-item .t b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .list-item .t span{font-size:.82rem;color:var(--muted)}
+  .stat{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}
+  .stat div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center;font-size:.78rem;color:var(--muted)}
+  .stat b{display:block;font-size:1.25rem;color:var(--txt)}
+  .reasons{margin:8px 0 0;padding:0;list-style:none;font-size:.88rem}
+  .reasons li{margin:3px 0;color:#cfe8d8} .reasons li.neg{color:#ffb3b3}
+  .match{font-size:.8rem;font-weight:700;color:var(--beer2)}
+  .profile-list{margin:4px 0 8px;padding-left:18px} .profile-list li{margin:2px 0}
+  /* Fenêtre détail */
+  #sheet{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center}
+  #sheet.open{display:flex}
+  #sheet .panel{background:var(--bg);border:1px solid var(--line);border-bottom:0;border-radius:18px 18px 0 0;width:100%;max-width:720px;max-height:92vh;overflow:auto;padding:16px 16px calc(24px + env(safe-area-inset-bottom))}
+  #sheet .close{float:right;padding:6px 12px}
+  #toast{position:fixed;left:50%;top:calc(62px + env(safe-area-inset-top));transform:translateX(-50%);background:#f6ece4;color:#2a1418;padding:10px 16px;border-radius:12px;font-weight:600;z-index:30;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw;text-align:center}
+  #toast.on{opacity:1}
+  .empty{text-align:center;padding:30px 10px;color:var(--muted)}
+  .empty .e{font-size:2.6rem}
+  footer.legal{text-align:center;font-size:.8rem;color:var(--muted);margin:20px 0 4px}
+  #installBtn{display:none;padding:7px 12px;font-size:.88rem}
+</style>
+</head>
+<body>
+<header>
+  <h1><span>Mes Bières</span> &amp; <b>Vins</b></h1>
+  <button id="installBtn" class="btn-main">Installer</button>
+</header>
+<main id="view"></main>
+<nav id="nav">
+  <button data-go="gouts"><span class="i">📝</span>Mes goûts</button>
+  <button data-go="decouvrir"><span class="i">🎯</span>Noter</button>
+  <button data-go="biblio"><span class="i">📚</span>Bibliothèque</button>
+  <button data-go="essayer"><span class="i">✨</span>À essayer</button>
+  <button data-go="sauvegarde"><span class="i">💾</span>Sauvegarde</button>
+</nav>
+<div id="sheet"><div class="panel" id="sheetPanel"></div></div>
+<div id="toast"></div>
+
+<script src="data.js"></script>
+<script>
+"use strict";
+/* ============================== Données ============================== */
+const KEY = "mes-bieres-vins-v1";
+const NOTES = {
+  1: { e: "👎", l: "Je n'aime pas", s: "Je n'aime pas" },
+  2: { e: "😐", l: "Neutre", s: "Neutre" },
+  3: { e: "👍", l: "J'aime bien", s: "J'aime bien" },
+  0: { e: "🔖", l: "Jamais goûté", s: "À goûter" }
+};
+const QMAP = Object.fromEntries(QUESTIONS.map(q => [q.id, q]));
+const CATALOG = [
+  ...BIERES.map(p => ({ ...p, type: "biere" })),
+  ...VINS.map(p => ({ ...p, type: "vin" }))
+];
+
+function blankState(){ return { v: 1, answers: {}, quizDone: false, ratings: {}, custom: [] }; }
+let state = load();
+function load(){
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY));
+    if (s && typeof s === "object") return Object.assign(blankState(), s);
+  } catch(e) {}
+  return blankState();
+}
+function save(){
+  try { localStorage.setItem(KEY, JSON.stringify(state)); }
+  catch(e){ toast("Impossible d'enregistrer : mémoire du navigateur indisponible"); }
+}
+if (navigator.storage && navigator.storage.persist) { navigator.storage.persist().catch(()=>{}); }
+
+const ui = { view: "gouts", quiz: null, decFilter: null, decOuest: false, decCat: "", skipped: new Set(), undo: null,
+             bType: "all", bNote: "all", bSort: "recent", bSearch: "", eType: null };
+
+/* ============================== Outils ============================== */
+const $ = s => document.querySelector(s);
+function esc(s){ return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+let toastT;
+function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("on"), 1700); }
+function allProducts(){ return [...CATALOG, ...state.custom]; }
+function getProduct(id){ return allProducts().find(p => p.id === id); }
+function styleInfo(p){ return p.type === "biere" ? BEER_STYLES[p.style] : WINE_PROFILES[p.profil]; }
+function styleLabel(p){ const s = styleInfo(p); return s ? s.short : "—"; }
+function noteBadge(n){ if (n === undefined || n === null) return ""; const x = NOTES[n]; return `<span class="note n${n}">${x.e} ${x.s}</span>`; }
+function typeBadge(p){ return `<span class="ptype ${p.type}">${p.type === "biere" ? "🍺 Bière" : "🍷 Vin"}</span>`; }
+function drinksTypes(){
+  const b = state.answers.boit;
+  if (b === "biere") return ["biere"];
+  if (b === "vin") return ["vin"];
+  return ["biere", "vin"];
+}
+function isVisible(q, a){ return !q.when || q.when(a); }
+function A(id){ const q = QMAP[id]; if (!q || !isVisible(q, state.answers)) return undefined; return state.answers[id]; }
+const LEVEL = { amer: ["", "faible", "moyenne", "forte"], force: ["", "léger", "moyen", "fort"], corps: ["", "léger", "équilibré", "rond"] };
+
+/* ============================ Suggestions ============================ */
+function scoreProduct(p){
+  let s = 0; const pos = [], neg = [];
+  const add = (v, txt) => { s += v; if (txt) (v >= 0 ? pos : neg).push(txt); };
+  const near = (val, pref, txtOk, txtKo) => {
+    if (!pref || !val) return;
+    const d = Math.abs(val - pref);
+    if (d === 0) add(1, txtOk); else if (d >= 2) add(-1.5, txtKo);
+  };
+  const info = styleInfo(p);
+  if (!info) return { s: 0, pos, neg };
+
+  if (p.type === "biere"){
+    const st = A("b_style_" + p.style);
+    if (st === 3) add(3, `Vous aimez : ${info.label}`);
+    else if (st === 2) add(0.5);
+    else if (st === 1) add(-4, `Vous n'aimez pas : ${info.label}`);
+    else if (st === 0) add(0.5, "Un style que vous n'avez jamais goûté");
+    if (p.style === "ipa"){
+      const t = A("b_ipa_type");
+      if (t === "west" && p.west) add(1.5, "IPA amère et sèche, comme vous les aimez");
+      if (t === "hazy" && p.hazy) add(1.5, "IPA trouble et juteuse, comme vous les aimez");
+      if (t === "west" && p.hazy) add(-1, "IPA trouble, alors que vous préférez les amères");
+      if (t === "hazy" && p.west) add(-1, "IPA très amère, alors que vous préférez les troubles");
+    }
+    if (p.style === "brune" || p.style === "stout"){
+      const f = A("b_fonce"); const ar = p.ar || [];
+      if (f === "caramel" && ar.includes("caramel")) add(1, "Côté caramel et fruits secs");
+      if (f === "torrefie" && ar.includes("torrefie")) add(1, "Côté café et chocolat");
+    }
+    near(p.amer, A("b_amer"), `Amertume ${LEVEL.amer[p.amer]}, comme vous l'aimez`, `Amertume ${LEVEL.amer[p.amer]}, loin de vos goûts`);
+    near(p.force, A("b_force"), `Degré ${LEVEL.force[p.force]}, comme vous le préférez`, `Degré ${LEVEL.force[p.force]}, loin de vos goûts`);
+    near(p.corps, A("b_corps"), `Corps ${LEVEL.corps[p.corps]}, comme vous l'aimez`, `Corps ${LEVEL.corps[p.corps]}, loin de vos goûts`);
+    const ar = A("b_aromes") || {};
+    (p.ar || []).forEach(k => {
+      if (ar[k] === 3) add(1, `Arôme que vous aimez : ${AROMAS[k].toLowerCase()}`);
+      else if (ar[k] === 1) add(-1.5, `Arôme que vous n'aimez pas : ${AROMAS[k].toLowerCase()}`);
+    });
+  } else {
+    const col = WINE_COLORS[info.color];
+    const cv = A(col.q);
+    if (cv === 3) add(2, `Vous aimez : ${col.label}`);
+    else if (cv === 2 || cv === 0) add(0.5);
+    else if (cv === 1) add(-4, `Vous n'aimez pas : ${col.label}`);
+    if (QMAP["v_" + p.profil]){
+      const v = A("v_" + p.profil);
+      if (v === 3) add(2.5, `Vous aimez : ${info.label}`);
+      else if (v === 1) add(-3, `Vous n'aimez pas : ${info.label}`);
+      else if (v === 0) add(0.5, "Une famille que vous n'avez jamais goûtée");
+    }
+    const tq = info.color === "rose" ? "v_rose_type" : info.color === "bulles" ? "v_bulles_type" : null;
+    if (tq){
+      const t = A(tq);
+      if (t === p.profil) add(2, `${info.label}, votre style préféré`);
+      else if (t === "both") add(0.5);
+      else if (t) add(-1, `${info.label}, pas votre style préféré`);
+    }
+    near(p.sucre, A("v_sucre"), p.sucre === 1 ? "Sec, comme vous les préférez" : "Sucré, comme vous les préférez", p.sucre === 1 ? "Sec, alors que vous les aimez sucrés" : "Sucré, alors que vous les aimez secs");
+    near(p.corps, A("v_corps"), "Puissance qui correspond à vos goûts", "Puissance éloignée de vos goûts");
+    near(p.acid, A("v_acid"), "Fraîcheur qui correspond à vos goûts", "Fraîcheur éloignée de vos goûts");
+    const rg = A("v_regions") || {};
+    if (p.region && rg[p.region] === 3) add(1, `Région que vous aimez : ${REGIONS[p.region].split(" (")[0]}`);
+    if (p.region && rg[p.region] === 1) add(-1, `Région que vous n'aimez pas : ${REGIONS[p.region].split(" (")[0]}`);
+  }
+  // Ressemblance avec la bibliothèque
+  const key = p.type === "biere" ? "style" : "profil";
+  const same = allProducts().filter(o => o.id !== p.id && o.type === p.type && o[key] === p[key] && state.ratings[o.id]);
+  const liked = same.find(o => state.ratings[o.id].note === 3);
+  const disliked = same.find(o => state.ratings[o.id].note === 1);
+  if (liked) add(1.5, `Proche de « ${liked.n} », que vous aimez`);
+  if (disliked && !liked) add(-1.5, `Proche de « ${disliked.n} », que vous n'aimez pas`);
+  return { s, pos, neg };
+}
+function matchLabel(s){ return s >= 6 ? "★★★ Excellent choix pour vous" : s >= 3.5 ? "★★ Bon choix" : "★ À tenter"; }
+
+/* =========================== Questionnaire =========================== */
+function visibleQuestions(){ return QUESTIONS.filter(q => isVisible(q, state.answers)); }
+function startQuiz(fromStart){
+  const vis = visibleQuestions();
+  let first = vis[0].id;
+  if (!fromStart){ const un = vis.find(q => state.answers[q.id] === undefined); if (un) first = un.id; }
+  ui.quiz = { cur: first, hist: [] };
+  render();
+}
+function quizNext(){
+  const vis = visibleQuestions();
+  const i = vis.findIndex(q => q.id === ui.quiz.cur);
+  ui.quiz.hist.push(ui.quiz.cur);
+  if (i < 0 || i >= vis.length - 1){
+    state.quizDone = true; save(); ui.quiz = null;
+    toast("Questionnaire terminé, merci !");
+  } else ui.quiz.cur = vis[i + 1].id;
+  render(); window.scrollTo(0, 0);
+}
+function quizPrev(){
+  if (!ui.quiz.hist.length) return;
+  ui.quiz.cur = ui.quiz.hist.pop(); render();
+}
+function answer(id, v){
+  if (ui.quiz.lock) return;
+  ui.quiz.lock = true;
+  state.answers[id] = v; save();
+  setTimeout(() => { if (ui.quiz) ui.quiz.lock = false; quizNext(); }, 140);
+  document.querySelectorAll("[data-ans]").forEach(b => b.classList.toggle("sel", b.dataset.ans === String(v)));
+}
+function viewQuiz(){
+  const q = QMAP[ui.quiz.cur];
+  const vis = visibleQuestions();
+  const pos = Math.max(0, vis.findIndex(x => x.id === q.id));
+  const pct = Math.round((pos) / vis.length * 100);
+  const cur = state.answers[q.id];
+  let body = "";
+  if (q.type === "choice"){
+    body = `<div class="answers">${q.options.map(o =>
+      `<button data-act="ans" data-ans="${esc(o.v)}" data-num="${typeof o.v === "number" ? 1 : 0}" class="${cur === o.v ? "sel" : ""}">${esc(o.l)}</button>`).join("")}</div>`;
+  } else if (q.type === "rate"){
+    body = `<div class="rate4">${[1, 2, 3, 0].map(n =>
+      `<button data-act="ans" data-ans="${n}" data-num="1" class="${cur === n ? "sel" : ""}"><span class="e">${NOTES[n].e}</span>${NOTES[n].l}</button>`).join("")}</div>`;
+  } else if (q.type === "ratelist"){
+    const vals = cur || {};
+    body = `<div class="card" style="margin-top:14px">${Object.entries(q.items).map(([k, l]) =>
+      `<div class="rl-item"><span class="lbl">${esc(l)}</span>${[[1, "👎"], [2, "😐"], [3, "👍"], [0, "?"]].map(([n, e]) =>
+        `<button data-act="rl" data-k="${k}" data-n="${n}" class="${vals[k] === n ? "sel" : ""}" title="${n ? NOTES[n].l : "Je ne sais pas"}">${e}</button>`).join("")}</div>`).join("")}</div>
+      <button class="btn-main full" data-act="qnext">Valider et continuer →</button>`;
+  }
+  return `
+    <div class="row small muted"><span class="grow">Question ${pos + 1} sur ${vis.length} (le total s'ajuste selon vos réponses)</span><span>${pct} %</span></div>
+    <div class="progress"><div style="width:${pct}%"></div></div>
+    <div class="card" style="margin-top:12px">
+      <div class="qsection">${esc(q.section)}</div>
+      <div class="qtitle">${esc(q.title)}</div>
+      ${q.help ? `<p class="muted">${esc(q.help)}</p>` : ""}
+      ${body}
+      <div class="qnav">
+        <button class="btn-ghost" data-act="qprev" ${ui.quiz.hist.length ? "" : "disabled style='opacity:.4'"}>← Précédent</button>
+        ${q.type !== "ratelist" ? `<button class="btn-ghost" data-act="qnext">Passer →</button>` : ""}
+      </div>
+    </div>
+    <button class="btn-ghost full small" data-act="qquit">Mettre en pause (vos réponses sont gardées)</button>`;
+}
+
+/* =========================== Vue : Mes goûts =========================== */
+function profileHTML(){
+  const a = state.answers; let h = "";
+  const group = (ids, labelOf) => {
+    const g = { 3: [], 2: [], 1: [], 0: [] };
+    ids.forEach(id => { const v = A(id); if (v !== undefined && g[v]) g[v].push(labelOf(id)); });
+    let out = "";
+    [[3, "Vous aimez"], [2, "Neutre"], [1, "Vous n'aimez pas"], [0, "Jamais goûté"]].forEach(([n, t]) => {
+      if (g[n].length) out += `<p><span class="note n${n}">${NOTES[n].e} ${t}</span></p><ul class="profile-list">${g[n].map(x => `<li>${esc(x)}</li>`).join("")}</ul>`;
+    });
+    return out;
+  };
+  const optLabel = id => { const v = A(id); if (v === undefined) return null; const o = (QMAP[id].options || []).find(o => o.v === v); return o ? o.l : null; };
+  if (drinksBeer(a)){
+    h += `<h3>🍺 Bières</h3>` + group(Object.keys(BEER_STYLES).map(k => "b_style_" + k), id => BEER_STYLES[id.slice(8)].label);
+    const prefs = [["b_amer", "Amertume"], ["b_force", "Degré"], ["b_corps", "Corps"], ["b_ipa_type", "IPA"], ["b_fonce", "Bières foncées"]]
+      .map(([id, l]) => { const o = optLabel(id); return o ? `<li><b>${l} :</b> ${esc(o)}</li>` : ""; }).join("");
+    if (prefs) h += `<p class="muted small">Vos préférences</p><ul class="profile-list">${prefs}</ul>`;
+    const ar = A("b_aromes") || {};
+    const loved = Object.keys(ar).filter(k => ar[k] === 3).map(k => AROMAS[k]);
+    if (loved.length) h += `<p class="muted small">Arômes préférés</p><ul class="profile-list">${loved.map(x => `<li>${esc(x)}</li>`).join("")}</ul>`;
+  }
+  if (drinksWine(a)){
+    h += `<h3>🍷 Vins</h3>` + group(["v_rouge", "v_rouge_leger", "v_rouge_corse", "v_rouge_sud", "v_blanc", "v_blanc_vif", "v_blanc_rond", "v_blanc_aroma", "v_rose", "v_bulles", "v_doux"],
+      id => QMAP[id].title);
+    const prefs = [["v_rose_type", "Rosé"], ["v_bulles_type", "Bulles"], ["v_sucre", "Sucre"], ["v_corps", "Puissance"], ["v_acid", "Fraîcheur"]]
+      .map(([id, l]) => { const o = optLabel(id); return o ? `<li><b>${l} :</b> ${esc(o)}</li>` : ""; }).join("");
+    if (prefs) h += `<p class="muted small">Vos préférences</p><ul class="profile-list">${prefs}</ul>`;
+    const rg = A("v_regions") || {};
+    const loved = Object.keys(rg).filter(k => rg[k] === 3).map(k => REGIONS[k].split(" (")[0]);
+    if (loved.length) h += `<p class="muted small">Régions préférées</p><ul class="profile-list">${loved.map(x => `<li>${esc(x)}</li>`).join("")}</ul>`;
+  }
+  return h || `<p class="muted">Pas encore de réponses.</p>`;
+}
+function viewGouts(){
+  if (ui.quiz) return viewQuiz();
+  const n = Object.keys(state.answers).length;
+  if (!n) return `
+    <div class="card">
+      <h2>Bienvenue 👋</h2>
+      <p>Cette application vous aide à <b>mieux connaître vos goûts</b> en bière et en vin, à garder une <b>bibliothèque</b> de ce que vous avez goûté et à recevoir des <b>suggestions</b>.</p>
+      <p class="muted">Étape 1 : un questionnaire de 2 à 5 minutes. Les questions s'adaptent à vos réponses : si vous ne buvez pas de vin, on ne vous en parle pas.</p>
+      <button class="btn-main full" data-act="qstart">Commencer le questionnaire</button>
+    </div>
+    <div class="card small muted">
+      <b>Comment noter ?</b> Partout dans l'application, vous notez sur 3 niveaux : 👎 je n'aime pas, 😐 neutre, 👍 j'aime bien. Le bouton 🔖 « Jamais goûté » range le produit dans votre liste à goûter.
+    </div>`;
+  return `
+    ${state.quizDone ? "" : `<div class="card"><p><b>Questionnaire en cours.</b> Vous pouvez le reprendre là où vous l'avez laissé.</p><button class="btn-main full" data-act="qresume">Reprendre</button></div>`}
+    <div class="card">
+      <h2>Mon profil de goûts</h2>
+      ${profileHTML()}
+      <div class="row" style="margin-top:14px">
+        <button class="grow" data-act="qedit">✏️ Revoir mes réponses</button>
+        <button class="grow btn-ghost" data-act="qreset">Tout recommencer</button>
+      </div>
+    </div>
+    <div class="row">
+      <button class="grow btn-beer" data-go="decouvrir">🎯 Noter des produits</button>
+      <button class="grow btn-main" data-go="essayer">✨ Mes suggestions</button>
+    </div>`;
+}
+
+/* ============================ Vue : Noter ============================ */
+function decQueue(){
+  const types = ui.decFilter ? [ui.decFilter] : drinksTypes();
+  return CATALOG.filter(p => types.includes(p.type) && state.ratings[p.id] === undefined && !ui.skipped.has(p.id)
+    && (!ui.decOuest || p.ouest) && (!ui.decCat || (p.style || p.profil) === ui.decCat))
+    .sort((a, b) => (b.ouest ? 1 : 0) - (a.ouest ? 1 : 0));
+}
+function catOptions(type){
+  const opts = [];
+  if (!type || type === "biere") Object.entries(BEER_STYLES).forEach(([k, s]) => opts.push([k, "🍺 " + s.label]));
+  if (!type || type === "vin") Object.entries(WINE_PROFILES).forEach(([k, s]) => opts.push([k, "🍷 " + s.label]));
+  return opts;
+}
+function productCard(p){
+  const info = styleInfo(p);
+  const tags = [];
+  if (p.type === "biere"){
+    tags.push(p.deg ? `${String(p.deg).replace(".", ",")} % vol.` : `Degré ${LEVEL.force[p.force] || "?"}`, `Amertume ${LEVEL.amer[p.amer] || "?"}`, `Corps ${LEVEL.corps[p.corps] || "?"}`);
+    (p.ar || []).forEach(k => tags.push(AROMAS[k]));
+  } else {
+    if (p.cep) tags.push("Cépage : " + p.cep);
+    tags.push(["", "Sec", "Légèrement sucré", "Doux"][p.sucre] || "", ["", "Léger", "Équilibré", "Puissant"][p.corps] || "");
+    if (p.tan) tags.push("Tanins " + ["", "légers", "moyens", "marqués"][p.tan]);
+  }
+  return `
+    ${typeBadge(p)} ${p.ouest ? `<span class="ptype ouest">🌊 Ouest</span>` : ""} <span class="tag">${esc(info ? info.label : "")}</span>
+    <div class="pname">${esc(p.n)}</div>
+    <div class="muted small">${esc([p.prod, p.region && REGIONS[p.region] ? REGIONS[p.region].split(" (")[0] : "", p.pays].filter(Boolean).join(" · "))}</div>
+    ${p.d ? `<p style="margin-top:10px">${esc(p.d)}</p>` : ""}
+    <div class="tags">${tags.filter(Boolean).map(t => `<span class="tag">${esc(t)}</span>`).join("")}</div>
+    ${p.custom ? `<p class="small muted" style="margin-top:-4px">Caractéristiques typiques du style choisi (ajout personnel).</p>` : ""}
+    ${p.estim ? `<p class="small muted" style="margin-top:-4px">Degré non trouvé : caractéristiques estimées d'après le style.</p>` : ""}`;
+}
+function rateButtons(id, cur, act){
+  return `<div class="rate-btns">${[1, 2, 3, 0].map(n =>
+    `<button data-act="${act}" data-id="${esc(id)}" data-n="${n}" class="${cur === n ? "sel" : ""}"><span class="e">${NOTES[n].e}</span>${NOTES[n].l}</button>`).join("")}</div>`;
+}
+function viewDecouvrir(){
+  const q = decQueue(); const p = q[0];
+  const f = ui.decFilter;
+  return `
+    <h2>Noter des bières et des vins</h2>
+    <p class="muted small">Notez ce que vous connaissez. « Jamais goûté » l'ajoute à votre liste à goûter, « Passer » le met de côté.</p>
+    <div class="chips">
+      <button class="chip ${!f ? "on" : ""}" data-act="decf" data-v="">Tout</button>
+      <button class="chip ${f === "biere" ? "on" : ""}" data-act="decf" data-v="biere">🍺 Bières</button>
+      <button class="chip ${f === "vin" ? "on" : ""}" data-act="decf" data-v="vin">🍷 Vins</button>
+      <button class="chip ${ui.decOuest ? "on" : ""}" data-act="decouest">🌊 Bières de l'Ouest</button>
+    </div>
+    <select id="decCat"><option value="">Toutes les familles</option>${catOptions(f).map(([k, l]) => `<option value="${k}" ${ui.decCat === k ? "selected" : ""}>${esc(l)}</option>`).join("")}</select>
+    <p class="small muted" style="margin-top:10px">${q.length} produit${q.length > 1 ? "s" : ""} à noter</p>
+    ${p ? `<div class="card">${productCard(p)}${rateButtons(p.id, undefined, "decrate")}
+        <div class="row" style="margin-top:10px">
+          <button class="grow btn-ghost" data-act="decskip" data-id="${esc(p.id)}">Passer →</button>
+          ${ui.undo ? `<button class="grow btn-ghost" data-act="decundo">↶ Annuler la dernière note</button>` : ""}
+        </div></div>`
+      : `<div class="empty"><div class="e">🎉</div><p>Plus rien à noter dans cette sélection.</p>
+        ${ui.skipped.size ? `<button data-act="decunskip">Revoir les ${ui.skipped.size} produit(s) passé(s)</button>` : ""}
+        ${ui.undo ? `<p><button class="btn-ghost" data-act="decundo">↶ Annuler la dernière note</button></p>` : ""}</div>`}
+    <button class="full" data-act="add">➕ Ajouter une bière ou un vin qui n'est pas dans la liste</button>`;
+}
+
+/* ========================= Vue : Bibliothèque ========================= */
+function libEntries(){
+  return allProducts().filter(p => state.ratings[p.id] !== undefined);
+}
+function viewBiblio(){
+  const all = libEntries();
+  const c = n => all.filter(p => state.ratings[p.id].note === n).length;
+  return `
+    <h2>Ma bibliothèque</h2>
+    <div class="stat">
+      <div><b>${c(3)}</b>👍 J'aime</div><div><b>${c(2)}</b>😐 Neutre</div>
+      <div><b>${c(1)}</b>👎 J'aime pas</div><div><b>${c(0)}</b>🔖 À goûter</div>
+    </div>
+    <button class="btn-main full" data-act="add" style="margin-bottom:12px">➕ Ajouter une bière ou un vin</button>
+    <input id="bSearch" type="search" placeholder="Rechercher un nom, un producteur, un style…" value="${esc(ui.bSearch)}">
+    <div class="chips">
+      <button class="chip ${ui.bType === "all" ? "on" : ""}" data-act="bt" data-v="all">Tout</button>
+      <button class="chip ${ui.bType === "biere" ? "on" : ""}" data-act="bt" data-v="biere">🍺 Bières</button>
+      <button class="chip ${ui.bType === "vin" ? "on" : ""}" data-act="bt" data-v="vin">🍷 Vins</button>
+    </div>
+    <div class="row" style="margin-bottom:12px">
+      <select id="bNote" class="grow" style="width:auto">
+        ${[["all", "Toutes les notes"], ["3", "👍 J'aime bien"], ["2", "😐 Neutre"], ["1", "👎 Je n'aime pas"], ["0", "🔖 À goûter"]].map(([v, l]) => `<option value="${v}" ${ui.bNote === v ? "selected" : ""}>${l}</option>`).join("")}
+      </select>
+      <select id="bSort" class="grow" style="width:auto">
+        ${[["recent", "Plus récents"], ["note", "Meilleures notes"], ["nom", "Nom (A → Z)"], ["style", "Par style"]].map(([v, l]) => `<option value="${v}" ${ui.bSort === v ? "selected" : ""}>${l}</option>`).join("")}
+      </select>
+    </div>
+    <div id="bList">${biblioList()}</div>`;
+}
+function biblioList(){
+  const s = ui.bSearch.trim().toLowerCase();
+  let l = libEntries().filter(p => (ui.bType === "all" || p.type === ui.bType)
+    && (ui.bNote === "all" || String(state.ratings[p.id].note) === ui.bNote)
+    && (!s || [p.n, p.prod, p.pays, styleLabel(p), state.ratings[p.id].com, state.ratings[p.id].lieu].join(" ").toLowerCase().includes(s)));
+  const order = { 3: 0, 2: 1, 0: 2, 1: 3 };
+  const sorters = {
+    recent: (a, b) => (state.ratings[b.id].t || 0) - (state.ratings[a.id].t || 0),
+    note: (a, b) => order[state.ratings[a.id].note] - order[state.ratings[b.id].note] || a.n.localeCompare(b.n, "fr"),
+    nom: (a, b) => a.n.localeCompare(b.n, "fr"),
+    style: (a, b) => (a.type + styleLabel(a)).localeCompare(b.type + styleLabel(b), "fr") || a.n.localeCompare(b.n, "fr")
+  };
+  l.sort(sorters[ui.bSort]);
+  if (!libEntries().length) return `<div class="empty"><div class="e">📚</div><p>Votre bibliothèque est vide.</p><p class="small">Allez dans « Noter » pour noter des produits connus, ou ajoutez les vôtres.</p></div>`;
+  if (!l.length) return `<div class="empty">Aucun résultat.</div>`;
+  return l.map(p => `<div class="list-item" data-act="open" data-id="${esc(p.id)}">
+      <span style="font-size:1.4rem">${p.type === "biere" ? "🍺" : "🍷"}</span>
+      <div class="t"><b>${esc(p.n)}${p.custom ? " ✍️" : ""}</b><span>${esc(styleLabel(p))}${p.prod ? " · " + esc(p.prod) : ""}${state.ratings[p.id].com ? " · 💬" : ""}</span></div>
+      ${noteBadge(state.ratings[p.id].note)}</div>`).join("");
+}
+
+/* ========================== Vue : À essayer ========================== */
+function viewEssayer(){
+  const hasInfo = Object.keys(state.answers).length || Object.keys(state.ratings).length;
+  if (!hasInfo) return `<h2>À essayer</h2><div class="empty"><div class="e">✨</div><p>Répondez d'abord au questionnaire ou notez quelques produits : les suggestions se basent sur vos goûts.</p><button class="btn-main" data-go="gouts">Aller au questionnaire</button></div>`;
+  const types = ui.eType ? [ui.eType] : drinksTypes();
+  const cands = allProducts().filter(p => types.includes(p.type) && (state.ratings[p.id] === undefined || state.ratings[p.id].note === 0))
+    .map(p => ({ p, ...scoreProduct(p) })).filter(x => x.s > 0).sort((a, b) => b.s - a.s || a.p.n.localeCompare(b.p.n, "fr")).slice(0, 30);
+  const wish = allProducts().filter(p => state.ratings[p.id] && state.ratings[p.id].note === 0).length;
+  return `
+    <h2>À essayer</h2>
+    <p class="muted small">Classement calculé à partir de votre questionnaire et de vos notes. Les raisons sont affichées sous chaque produit.</p>
+    <div class="chips">
+      <button class="chip ${!ui.eType ? "on" : ""}" data-act="ef" data-v="">Tout</button>
+      <button class="chip ${ui.eType === "biere" ? "on" : ""}" data-act="ef" data-v="biere">🍺 Bières</button>
+      <button class="chip ${ui.eType === "vin" ? "on" : ""}" data-act="ef" data-v="vin">🍷 Vins</button>
+    </div>
+    ${wish ? `<p class="small">🔖 ${wish} produit(s) dans votre liste à goûter (voir Bibliothèque).</p>` : ""}
+    ${cands.length ? cands.map(({ p, s, pos, neg }) => `
+      <div class="card">
+        <div class="row"><span class="match grow">${matchLabel(s)}</span>${state.ratings[p.id] ? noteBadge(0) : ""}</div>
+        <div class="row" style="margin-top:6px">${typeBadge(p)} ${p.ouest ? `<span class="ptype ouest">🌊 Ouest</span>` : ""} <span class="tag">${esc(styleLabel(p))}</span></div>
+        <div class="pname" style="font-size:1.12rem">${esc(p.n)}</div>
+        ${p.d ? `<p class="small muted">${esc(p.d)}</p>` : ""}
+        <ul class="reasons">${pos.slice(0, 3).map(r => `<li>✓ ${esc(r)}</li>`).join("")}${neg.slice(0, 1).map(r => `<li class="neg">⚠ ${esc(r)}</li>`).join("")}</ul>
+        <div class="row" style="margin-top:10px">
+          ${state.ratings[p.id] ? "" : `<button class="grow" data-act="wish" data-id="${esc(p.id)}">🔖 À goûter</button>`}
+          <button class="grow btn-ghost" data-act="open" data-id="${esc(p.id)}">Je l'ai goûté → noter</button>
+        </div>
+      </div>`).join("")
+      : `<div class="empty"><p>Aucune suggestion pour le moment avec ce filtre.</p><p class="small">Complétez le questionnaire ou notez davantage de produits.</p></div>`}`;
+}
+
+/* ========================== Vue : Sauvegarde ========================== */
+function viewSauvegarde(){
+  const nR = Object.keys(state.ratings).length;
+  return `
+    <h2>Sauvegarde</h2>
+    <div class="card">
+      <p>Vos données sont enregistrées <b>uniquement sur cet appareil</b> : ${nR} produit(s) dans la bibliothèque, dont ${state.custom.length} ajouté(s) par vous, et ${Object.keys(state.answers).length} réponse(s) au questionnaire.</p>
+      <p class="muted small">Pensez à exporter régulièrement une sauvegarde. Elle sert aussi à transférer vos données d'un appareil à un autre (exporter sur l'un, importer sur l'autre).</p>
+      <button class="btn-main full" data-act="export">⬇️ Exporter ma sauvegarde</button>
+      <label class="f" for="importFile">Importer une sauvegarde (remplace les données actuelles)</label>
+      <input type="file" id="importFile" accept=".json,application/json">
+    </div>
+    <div class="card small">
+      <b>Installer l'application</b>
+      <p class="muted">Android (Chrome) : menu ⋮ puis « Installer l'application ». iPhone (Safari) : bouton Partager puis « Sur l'écran d'accueil ». Une fois installée, elle fonctionne sans connexion.</p>
+    </div>
+    <div class="card small">
+      <b>Repartir de zéro</b>
+      <p class="muted">Efface le questionnaire, la bibliothèque et vos ajouts sur cet appareil.</p>
+      <button class="btn-danger full" data-act="wipe">Tout effacer</button>
+    </div>
+    <footer class="legal">L'abus d'alcool est dangereux pour la santé, à consommer avec modération.<br>Caractéristiques données à titre indicatif : elles varient selon les producteurs et les années.</footer>`;
+}
+
+/* ===================== Fenêtre : fiche et formulaire ===================== */
+function openSheet(html){ $("#sheetPanel").innerHTML = `<button class="close btn-ghost" data-act="close">✕</button>` + html; $("#sheet").classList.add("open"); }
+function closeSheet(){ $("#sheet").classList.remove("open"); render(); }
+function openProduct(id){
+  const p = getProduct(id); if (!p) return;
+  const r = state.ratings[id] || {};
+  openSheet(`
+    ${productCard(p)}
+    <p class="small muted" style="margin:6px 0 0">Ma note</p>
+    ${rateButtons(id, r.note, "setnote")}
+    <label class="f">Date de dégustation</label><input type="date" id="fDate" value="${esc(r.date || "")}">
+    <div class="row"><div class="grow"><label class="f">Lieu (bar, magasin…)</label><input id="fLieu" value="${esc(r.lieu || "")}"></div>
+      <div style="width:120px"><label class="f">Prix</label><input id="fPrix" value="${esc(r.prix || "")}" placeholder="ex. 4,50 €"></div></div>
+    <label class="f">Commentaire</label><textarea id="fCom" placeholder="Ce que vous en avez pensé, avec quoi vous l'avez bu…">${esc(r.com || "")}</textarea>
+    <button class="btn-main full" data-act="savedetail" data-id="${esc(id)}" style="margin-top:12px">Enregistrer</button>
+    <div class="row" style="margin-top:10px">
+      ${p.custom ? `<button class="grow" data-act="editcustom" data-id="${esc(id)}">✏️ Modifier la fiche</button>` : ""}
+      ${r.note !== undefined && !p.custom ? `<button class="grow btn-danger" data-act="unrate" data-id="${esc(id)}">Retirer de ma bibliothèque</button>` : ""}
+      ${p.custom ? `<button class="grow btn-danger" data-act="delcustom" data-id="${esc(id)}">Supprimer</button>` : ""}
+    </div>`);
+}
+function styleSelect(type, cur){
+  const src = type === "vin" ? WINE_PROFILES : BEER_STYLES;
+  return Object.entries(src).map(([k, s]) => `<option value="${k}" ${cur === k ? "selected" : ""}>${esc(s.label)}</option>`).join("");
+}
+function openForm(id){
+  const p = id ? getProduct(id) : null;
+  const type = p ? p.type : (ui.decFilter || (drinksTypes().length === 1 ? drinksTypes()[0] : "biere"));
+  const r = p ? (state.ratings[p.id] || {}) : {};
+  openSheet(`
+    <h2>${p ? "Modifier la fiche" : "Ajouter une bière ou un vin"}</h2>
+    <div class="chips" id="fType">
+      <button class="chip ${type === "biere" ? "on" : ""}" data-act="ftype" data-v="biere">🍺 Bière</button>
+      <button class="chip ${type === "vin" ? "on" : ""}" data-act="ftype" data-v="vin">🍷 Vin</button>
+    </div>
+    <input type="hidden" id="aType" value="${type}">
+    <label class="f">Nom *</label><input id="aNom" value="${esc(p ? p.n : "")}" placeholder="ex. Anne de Bretagne, Château X 2020…">
+    <label class="f" id="aProdL">${type === "vin" ? "Domaine / château" : "Brasserie"}</label><input id="aProd" value="${esc(p ? p.prod || "" : "")}">
+    <label class="f">Style (sert aux suggestions)</label><select id="aStyle">${styleSelect(type, p ? (p.style || p.profil) : "")}</select>
+    <div id="aRegionW" style="display:${type === "vin" ? "block" : "none"}">
+      <label class="f">Région</label><select id="aRegion"><option value="">Autre / je ne sais pas</option>${Object.entries(REGIONS).map(([k, l]) => `<option value="${k}" ${p && p.region === k ? "selected" : ""}>${esc(l)}</option>`).join("")}</select>
+    </div>
+    <label class="f">Origine (pays, ville…)</label><input id="aPays" value="${esc(p ? p.pays || "" : "")}" placeholder="ex. France (Nantes)">
+    <label class="f">Description courte (facultatif)</label><input id="aDesc" value="${esc(p ? p.d || "" : "")}">
+    ${p ? "" : `<p class="small muted" style="margin:12px 0 0">Ma note</p>${rateButtons("new", 0, "fnote")}
+      <input type="hidden" id="aNote" value="0">
+      <div class="row"><div class="grow"><label class="f">Lieu</label><input id="aLieu"></div><div style="width:120px"><label class="f">Prix</label><input id="aPrix"></div></div>
+      <label class="f">Commentaire</label><textarea id="aCom"></textarea>`}
+    <button class="btn-main full" data-act="savecustom" data-id="${p ? esc(p.id) : ""}" style="margin-top:14px">${p ? "Enregistrer" : "Ajouter à ma bibliothèque"}</button>`);
+}
+function saveCustom(id){
+  const nom = $("#aNom").value.trim();
+  if (!nom){ toast("Indiquez au moins le nom"); $("#aNom").focus(); return; }
+  const type = $("#aType").value, st = $("#aStyle").value;
+  const base = type === "vin" ? WINE_PROFILES[st] : BEER_STYLES[st];
+  const obj = { type, n: nom, prod: $("#aProd").value.trim(), pays: $("#aPays").value.trim(), d: $("#aDesc").value.trim(), custom: true };
+  if (type === "vin"){ Object.assign(obj, { profil: st, region: $("#aRegion").value, sucre: base.sucre, corps: base.corps, acid: base.acid, tan: base.tan }); }
+  else { Object.assign(obj, { style: st, amer: base.amer, corps: base.corps, force: base.force, ar: [] }); }
+  if (id){
+    const i = state.custom.findIndex(p => p.id === id);
+    state.custom[i] = { ...obj, id };
+    save(); toast("Fiche modifiée"); openProduct(id); return;
+  }
+  obj.id = "c_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+  state.custom.push(obj);
+  state.ratings[obj.id] = { note: Number($("#aNote").value), lieu: $("#aLieu").value.trim(), prix: $("#aPrix").value.trim(), com: $("#aCom").value.trim(),
+    date: new Date().toISOString().slice(0, 10), t: Date.now() };
+  save(); toast("Ajouté à votre bibliothèque"); closeSheet();
+}
+function setRating(id, note){
+  const prev = state.ratings[id];
+  state.ratings[id] = Object.assign({}, prev || {}, { note, t: Date.now() });
+  if (!prev && note !== 0 && !state.ratings[id].date) state.ratings[id].date = new Date().toISOString().slice(0, 10);
+  save(); return prev;
+}
+
+/* ============================ Export / import ============================ */
+function exportData(){
+  const blob = new Blob([JSON.stringify({ app: "mes-bieres-vins", version: 1, exported: new Date().toISOString(), data: state }, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "ma-sauvegarde-bieres-vins-" + new Date().toISOString().slice(0, 10) + ".json";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  toast("Sauvegarde exportée");
+}
+function importData(file){
+  const fr = new FileReader();
+  fr.onload = () => {
+    try {
+      const j = JSON.parse(fr.result);
+      const d = j && j.app === "mes-bieres-vins" ? j.data : null;
+      if (!d || typeof d.ratings !== "object" || typeof d.answers !== "object") throw new Error("format");
+      if (!confirm("Remplacer les données de cet appareil par cette sauvegarde ?")) return;
+      state = Object.assign(blankState(), d); save();
+      toast(`Sauvegarde importée : ${Object.keys(state.ratings).length} produit(s)`); render();
+    } catch(e){ toast("Ce fichier n'est pas une sauvegarde valide"); }
+  };
+  fr.readAsText(file);
+}
+
+/* ============================== Rendu ============================== */
+const VIEWS = { gouts: viewGouts, decouvrir: viewDecouvrir, biblio: viewBiblio, essayer: viewEssayer, sauvegarde: viewSauvegarde };
+function render(){
+  $("#view").innerHTML = VIEWS[ui.view]();
+  document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b.dataset.go === ui.view));
+}
+function go(v){ ui.view = v; render(); window.scrollTo(0, 0); }
+
+document.addEventListener("click", e => {
+  const g = e.target.closest("[data-go]");
+  if (g){ go(g.dataset.go); if ($("#sheet").classList.contains("open")) $("#sheet").classList.remove("open"); return; }
+  if (e.target.id === "sheet"){ closeSheet(); return; }
+  const b = e.target.closest("[data-act]"); if (!b || b.disabled) return;
+  const id = b.dataset.id, act = b.dataset.act;
+  switch (act){
+    case "qstart": startQuiz(true); break;
+    case "qresume": startQuiz(false); break;
+    case "qedit": startQuiz(true); break;
+    case "qreset": if (confirm("Effacer toutes vos réponses au questionnaire ? (La bibliothèque est conservée.)")){ state.answers = {}; state.quizDone = false; save(); startQuiz(true); } break;
+    case "qquit": ui.quiz = null; render(); break;
+    case "qnext": quizNext(); break;
+    case "qprev": quizPrev(); break;
+    case "ans": answer(ui.quiz.cur, b.dataset.num === "1" ? Number(b.dataset.ans) : b.dataset.ans); break;
+    case "rl": {
+      const q = ui.quiz.cur; const v = Object.assign({}, state.answers[q] || {});
+      v[b.dataset.k] = Number(b.dataset.n); state.answers[q] = v; save();
+      b.parentElement.querySelectorAll("button").forEach(x => x.classList.toggle("sel", x === b));
+      break; }
+    case "decf": ui.decFilter = b.dataset.v || null; ui.decCat = ""; ui.decOuest = false; render(); break;
+    case "decouest": ui.decOuest = !ui.decOuest; if (ui.decOuest) ui.decFilter = "biere"; ui.decCat = ""; render(); break;
+    case "decrate": {
+      const n = Number(b.dataset.n); const prev = setRating(id, n);
+      ui.undo = { id, prev };
+      toast(n === 0 ? "🔖 Ajouté à votre liste à goûter" : `${NOTES[n].e} Noté : ${NOTES[n].l}`);
+      render(); break; }
+    case "decskip": ui.skipped.add(id); ui.undo = null; render(); break;
+    case "decunskip": ui.skipped.clear(); render(); break;
+    case "decundo":
+      if (ui.undo){ if (ui.undo.prev) state.ratings[ui.undo.id] = ui.undo.prev; else delete state.ratings[ui.undo.id]; save(); ui.undo = null; toast("Note annulée"); render(); }
+      break;
+    case "bt": ui.bType = b.dataset.v; render(); break;
+    case "ef": ui.eType = b.dataset.v || null; render(); break;
+    case "wish": setRating(id, 0); toast("🔖 Ajouté à votre liste à goûter"); render(); break;
+    case "open": openProduct(id); break;
+    case "close": closeSheet(); break;
+    case "setnote":
+      setRating(id, Number(b.dataset.n));
+      b.parentElement.querySelectorAll("button").forEach(x => x.classList.toggle("sel", x === b));
+      toast("Note enregistrée"); break;
+    case "savedetail": {
+      if (!state.ratings[id]){ toast("Choisissez d'abord une note"); return; }
+      Object.assign(state.ratings[id], { date: $("#fDate").value, lieu: $("#fLieu").value.trim(), prix: $("#fPrix").value.trim(), com: $("#fCom").value.trim(), t: Date.now() });
+      save(); toast("Enregistré"); closeSheet(); break; }
+    case "unrate": delete state.ratings[id]; save(); toast("Retiré de la bibliothèque"); closeSheet(); break;
+    case "delcustom":
+      if (confirm("Supprimer définitivement cette fiche ?")){ state.custom = state.custom.filter(p => p.id !== id); delete state.ratings[id]; save(); toast("Fiche supprimée"); closeSheet(); }
+      break;
+    case "add": openForm(null); break;
+    case "editcustom": openForm(id); break;
+    case "ftype": {
+      const t = b.dataset.v; $("#aType").value = t;
+      b.parentElement.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+      $("#aStyle").innerHTML = styleSelect(t, "");
+      $("#aRegionW").style.display = t === "vin" ? "block" : "none";
+      $("#aProdL").textContent = t === "vin" ? "Domaine / château" : "Brasserie";
+      break; }
+    case "fnote":
+      $("#aNote").value = b.dataset.n;
+      b.parentElement.querySelectorAll("button").forEach(x => x.classList.toggle("sel", x === b)); break;
+    case "savecustom": saveCustom(id || null); break;
+    case "export": exportData(); break;
+    case "wipe":
+      if (confirm("Tout effacer sur cet appareil ? Pensez à exporter une sauvegarde avant.")){ state = blankState(); save(); ui.quiz = null; toast("Données effacées"); go("gouts"); }
+      break;
+  }
+});
+document.addEventListener("input", e => {
+  if (e.target.id === "bSearch"){ ui.bSearch = e.target.value; $("#bList").innerHTML = biblioList(); }
+});
+document.addEventListener("change", e => {
+  const t = e.target;
+  if (t.id === "decCat"){ ui.decCat = t.value; render(); }
+  if (t.id === "bNote"){ ui.bNote = t.value; $("#bList").innerHTML = biblioList(); }
+  if (t.id === "bSort"){ ui.bSort = t.value; $("#bList").innerHTML = biblioList(); }
+  if (t.id === "importFile" && t.files[0]){ importData(t.files[0]); t.value = ""; }
+});
+
+/* ========================== Installation (PWA) ========================== */
+let deferredPrompt = null;
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferredPrompt = e; $("#installBtn").style.display = "inline-block"; });
+$("#installBtn").addEventListener("click", async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; $("#installBtn").style.display = "none";
+});
+if ("serviceWorker" in navigator && location.protocol !== "file:"){
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+
+render();
+</script>
+</body>
+</html>
